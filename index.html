@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TugasKu</title>
+    <title>Tugasku</title>
     <!-- Tailwind CSS untuk styling modern -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,8 +16,8 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-indigo-400">🎓 TaskKu Kuliah</h1>
-                <p class="text-sm text-slate-400">Manajemen tugas & deadline kuliah</p>
+                <h1 class="text-2xl font-bold text-indigo-400">✨ Tugasku</h1>
+                <p class="text-sm text-slate-400">Catat tugas & deadline jadi lebih mudah</p>
             </div>
             <div id="task-stats" class="text-xs bg-slate-700 px-3 py-1.5 rounded-full text-slate-300 font-medium">
                 0 Selesai dari 0
@@ -27,7 +27,7 @@
         <!-- Form Input Tugas & Deadline -->
         <form id="task-form" class="space-y-3 mb-6">
             <div>
-                <input type="text" id="task-input" placeholder="Tulis nama tugas kuliah..." required
+                <input type="text" id="task-input" placeholder="Tulis nama tugas baru..." required
                     class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 text-sm text-slate-100 placeholder-slate-500">
             </div>
             <div class="flex gap-2">
@@ -45,7 +45,7 @@
             <!-- List tugas akan masuk otomatis di sini -->
         </ul>
         
-        <p id="empty-state" class="text-center text-slate-500 text-sm py-8">Belum ada tugas kuliah. Yuk tambah dulu!</p>
+        <p id="empty-state" class="text-center text-slate-500 text-sm py-8">Belum ada tugas. Yuk tambah dulu!</p>
     </div>
 
     <script>
@@ -56,10 +56,10 @@
         const taskStats = document.getElementById('task-stats');
         const emptyState = document.getElementById('empty-state');
 
-        let tasks = JSON.parse(localStorage.getItem('tasks_kuliah')) || [];
+        let tasks = JSON.parse(localStorage.getItem('tasks_universal')) || [];
 
         function saveAndRender() {
-            localStorage.setItem('tasks_kuliah', JSON.stringify(tasks));
+            localStorage.setItem('tasks_universal', JSON.stringify(tasks));
             renderTasks();
         }
 
@@ -78,7 +78,6 @@
             tasks.forEach((task, index) => {
                 if (task.completed) completedCount++;
 
-                // Hitung status deadline
                 let isUrgent = task.date <= today && !task.completed;
                 let dateBadgeClass = isUrgent 
                     ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' 
