@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tugasku</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+  /* Layout: satu kolom sempit (680px), kepala halaman di kiri, formulir tambah lalu daftar dalam satu kartu berbaris. */
+  :root {
+    --font: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --bg: #F2F4F7;
+    --surface: #FFFFFF;
+    --surface-2: #F6F8FA;
+    --ink: #141B24;
+    --muted: #5A6676;
+    --line: #DDE2E9;
+    --accent: #2457D6;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #E6EDFC;
+    --high: #B42318;
+    --high-soft: #FDECEA;
+    --mid: #8A5A00;
+    --mid-soft: #FFF3D6;
+    --low: #47566A;
+    --low-soft: #E9EDF2;
+    --radius: 12px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F141A;
+      --surface: #171E27;
+      --surface-2: #1C2530;
+      --ink: #E8EDF3;
+      --muted: #9AA7B6;
+      --line: #2A3441;
+      --accent: #6C93FF;
+      --accent-ink: #0B1220;
+      --accent-soft: #1C2A4D;
+      --high: #FF8A7E;
+      --high-soft: #3A1F1D;
+      --mid: #F2C46B;
+      --mid-soft: #3A2E14;
+      --low: #A9B6C6;
+      --low-soft: #252E3A;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F141A;
+    --surface: #171E27;
+    --surface-2: #1C2530;
+    --ink: #E8EDF3;
+    --muted: #9AA7B6;
+    --line: #2A3441;
+    --accent: #6C93FF;
+    --accent-ink: #0B1220;
+    --accent-soft: #1C2A4D;
+    --high: #FF8A7E;
+    --high-soft: #3A1F1D;
+    --mid: #F2C46B;
+    --mid-soft: #3A2E14;
+    --low: #A9B6C6;
+    --low-soft: #252E3A;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  [hidden] { display: none !important; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 28px 96px;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; display: grid; gap: 20px; }
+
+  /* Kepala */
+  .eyebrow {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(32px, 7vw, 44px);
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  .progress { margin-top: 16px; display: grid; gap: 8px; }
+  .bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+  .bar span { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .3s ease; }
+  .summary { margin: 0; color: var(--muted); font-size: 14px; }
+  .summary strong { color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* Kartu & formulir */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+  .add {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: end;
+  }
+  .add .f-text { grid-column: 1 / -1; }
+  .field { display: grid; gap: 6px; min-width: 0; }
+  .field label {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .input {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0 12px;
+    font: inherit;
+    color: var(--ink);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .input::placeholder { color: var(--muted); opacity: .85; }
+  .input:focus-visible, .btn:focus-visible, .icon-btn:focus-visible, .tabs button:focus-visible, .link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .btn {
+    height: 44px;
+    padding: 0 18px;
+    font: inherit;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn-primary:hover { background: var(--accent); filter: brightness(1.08); }
+  .hint { grid-column: 1 / -1; margin: -4px 0 0; font-size: 13px; color: var(--high); font-weight: 600; }
+
+  /* Filter */
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tabs button {
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 99px;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+  .tabs button:hover { color: var(--ink); background: var(--low-soft); }
+  .tabs button[aria-pressed="true"] { color: var(--accent); background: var(--accent-soft); }
+  .count { font-family: var(--mono); font-weight: 500; font-size: 12px; margin-left: 4px; font-variant-numeric: tabular-nums; }
+  .link {
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    padding: 6px 4px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .link:hover { color: var(--ink); }
+
+  /* Daftar */
+  .list { list-style: none; margin: 0; padding: 0; overflow: hidden; }
+  .task {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    padding: 14px 14px 14px 16px;
+    border-top: 1px solid var(--line);
+  }
+  .task:first-child { border-top: 0; }
+  .task.editing { display: block; background: var(--surface-2); }
+
+  .check { position: relative; display: inline-flex; padding-top: 1px; cursor: pointer; }
+  .check input { position: absolute; opacity: 0; width: 24px; height: 24px; margin: 0; cursor: pointer; }
+  .box {
+    width: 24px; height: 24px;
+    display: grid; place-items: center;
+    border: 2px solid var(--muted);
+    border-radius: 7px;
+    background: var(--surface);
+    transition: background .15s, border-color .15s;
+  }
+  .box svg { width: 14px; height: 14px; opacity: 0; stroke: var(--accent-ink); fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .check input:checked + .box { background: var(--accent); border-color: var(--accent); }
+  .check input:checked + .box svg { opacity: 1; }
+  .check input:focus-visible + .box { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .check:hover .box { border-color: var(--accent); }
+
+  .task-body { min-width: 0; display: grid; gap: 6px; }
+  .task-text { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+  .is-done .task-text { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1.5px; font-weight: 500; }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 99px;
+    background: var(--low-soft); color: var(--low);
+  }
+  .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .chip.p3 { background: var(--high-soft); color: var(--high); }
+  .chip.p2 { background: var(--mid-soft); color: var(--mid); }
+  .chip.p1 { background: var(--low-soft); color: var(--low); }
+  .is-done .chip { background: var(--low-soft); color: var(--muted); }
+  .due { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .due.late { color: var(--high); font-weight: 500; }
+  .due.soon { color: var(--accent); font-weight: 500; }
+
+  .actions { display: flex; gap: 2px; }
+  .icon-btn {
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    background: none; border: 0; border-radius: 9px;
+    color: var(--muted); cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--low-soft); color: var(--ink); }
+  .icon-btn.danger:hover { background: var(--high-soft); color: var(--high); }
+  .icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .edit { display: grid; gap: 10px; }
+  .edit-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .edit-row .input { width: auto; flex: 1 1 140px; }
+  .edit-row .btn { flex: 0 0 auto; }
+
+  .empty { padding: 28px 20px; display: grid; gap: 6px; justify-items: start; }
+  .empty h2 { margin: 0; font-size: 17px; font-weight: 700; }
+  .empty p { margin: 0; color: var(--muted); max-width: 46ch; }
+  .empty .btn { margin-top: 10px; }
+
+  .status { margin: 0; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
+  .status.ok::before { background: var(--accent); }
+
+  .toast {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: 0;
+    display: flex; justify-content: center;
+    padding: 0 max(16px, env(safe-area-inset-left, 0px)) calc(16px + env(safe-area-inset-bottom, 0px));
+    pointer-events: none;
+  }
+  .toast-inner {
+    pointer-events: auto;
+    display: flex; align-items: center; gap: 14px;
+    max-width: 100%;
+    padding: 10px 10px 10px 16px;
+    background: var(--ink); color: var(--bg);
+    border-radius: 12px;
+    font-weight: 600; font-size: 14px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.22);
+  }
+  .toast-inner button {
+    font: inherit; font-weight: 700;
+    color: var(--bg); background: transparent;
+    border: 1px solid currentColor; border-radius: 8px;
+    padding: 4px 10px; cursor: pointer;
+  }
+  .toast-inner button:focus-visible { outline: 2px solid var(--bg); outline-offset: 2px; }
+
+  @media (max-width: 520px) {
+    .add { grid-template-columns: 1fr 1fr; }
+    .add .btn-primary { grid-column: 1 / -1; }
+    .task { gap: 10px; padding: 12px 8px 12px 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow" id="today"></p>
+    <h1>Tugasku</h1>
+    <div class="progress">
+      <div class="bar" role="progressbar" aria-label="Kemajuan tugas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="bar-fill"></span></div>
+      <p class="summary" id="summary" aria-live="polite"></p>
+    </div>
+  </header>
+
+  <form class="add card" id="add-form" autocomplete="off" novalidate>
+    <div class="field f-text">
+      <label for="new-text">Tugas baru</label>
+      <input id="new-text" class="input" type="text" maxlength="200" placeholder="Tulis tugas, misalnya Kirim laporan mingguan">
+    </div>
+    <div class="field">
+      <label for="new-prio">Prioritas</label>
+      <select id="new-prio" class="input">
+        <option value="1">Rendah</option>
+        <option value="2" selected>Sedang</option>
+        <option value="3">Tinggi</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="new-due">Tenggat</label>
+      <input id="new-due" class="input" type="date">
+    </div>
+    <button class="btn btn-primary" type="submit">Tambah</button>
+    <p class="hint" id="add-hint" role="alert" hidden>Tulis dulu nama tugasnya.</p>
+  </form>
+
+  <div class="toolbar">
+    <div class="tabs" role="group" aria-label="Filter tugas">
+      <button type="button" data-filter="all" aria-pressed="true">Semua<span class="count" id="n-all">0</span></button>
+      <button type="button" data-filter="open" aria-pressed="false">Belum selesai<span class="count" id="n-open">0</span></button>
+      <button type="button" data-filter="done" aria-pressed="false">Selesai<span class="count" id="n-done">0</span></button>
+    </div>
+    <button type="button" class="link" id="clear-done" hidden>Hapus yang selesai</button>
+  </div>
+
+  <ul class="list card" id="list"></ul>
+  <p class="status" id="status"></p>
+</div>
+
+<div class="toast" id="toast" hidden>
+  <div class="toast-inner" role="status" aria-live="polite">
+    <span id="toast-text"></span>
+    <button type="button" id="toast-undo" hidden>Urungkan</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (s) { return document.querySelector(s); };
+  var PRIO = { 1: 'Rendah', 2: 'Sedang', 3: 'Tinggi' };
+  var LS_KEY = 'tugasku.v1';
+
+  var tasks = [];
+  var filter = 'all';
+  var editingId = null;
+  var editDraft = null;
+  var focusEdit = false;
+  var refocusId = null;
+  var ready = false;
+  var slow = false;
+  var mode = 'local';      // 'cloud' | 'local'
+  var col = null;
+  var lastRemoved = null;
+  var toastTimer = null;
+  var queues = new Map();
+
+  var ICON_EDIT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
+  var ICON_TRASH = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg>';
+  var ICON_CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+  /* ---------- util ---------- */
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function ymd(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function parseYmd(s) {
+    var p = s.split('-').map(Number);
+    return new Date(p[0], p[1] - 1, p[2]);
+  }
+  function daysFromToday(s) {
+    var t = new Date();
+    var a = parseYmd(s);
+    var b = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+    return Math.round((a - b) / 86400000);
+  }
+  var fmtLong, fmtShort, fmtDay;
+  try {
+    fmtLong = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    fmtShort = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' });
+    fmtDay = new Intl.DateTimeFormat('id-ID', { weekday: 'long' });
+  } catch (e) {
+    fmtLong = fmtShort = fmtDay = { format: function (d) { return ymd(d); } };
+  }
+  function dueInfo(t) {
+    if (!t.due) return null;
+    var n = daysFromToday(t.due);
+    var d = parseYmd(t.due);
+    var short = fmtShort.format(d);
+    if (t.done) return { text: short, cls: '' };
+    if (n < 0) return { text: 'Terlambat ' + (-n) + ' hari', cls: 'late' };
+    if (n === 0) return { text: 'Hari ini', cls: 'soon' };
+    if (n === 1) return { text: 'Besok', cls: 'soon' };
+    if (n < 7) return { text: fmtDay.format(d) + ', ' + short, cls: '' };
+    return { text: short, cls: '' };
+  }
+  function newId() {
+    return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+  function body(t) {
+    return { text: t.text, done: !!t.done, prio: t.prio, due: t.due || '', created: t.created, doneAt: t.doneAt || 0 };
+  }
+  function sorted(list) {
+    return list.slice().sort(function (a, b) {
+      if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+      if (!a.done) {
+        var ad = a.due || '9999', bd = b.due || '9999';
+        if (ad !== bd) return ad < bd ? -1 : 1;
+        if (a.prio !== b.prio) return b.prio - a.prio;
+      } else {
+        return (b.doneAt || 0) - (a.doneAt || 0);
+      }
+      return (a.created || 0) - (b.created || 0);
+    });
+  }
+
+  /* ---------- toast ---------- */
+  function toast(msg, undo) {
+    $('#toast-text').textContent = msg;
+    var u = $('#toast-undo');
+    u.hidden = !undo;
+    u.onclick = undo ? function () { hideToast(); undo(); } : null;
+    $('#toast').hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, undo ? 7000 : 4500);
+  }
+  function hideToast() { $('#toast').hidden = true; }
+
+  /* ---------- penyimpanan ---------- */
+  function loadLocal() {
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function saveLocal() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(tasks)); } catch (e) { /* diabaikan */ }
+  }
+  function onWriteError(e) {
+    var code = e && e.code;
+    if (code === 'quota_exceeded') toast('Penyimpanan penuh. Hapus beberapa tugas lama.');
+    else if (code === 'invalid_argument') toast('Perubahan tidak tersimpan. Tugas ini mungkin sudah dihapus atau akunmu tidak bisa menyimpan di sini.');
+    else toast('Perubahan belum tersimpan. Coba lagi sebentar lagi.');
+  }
+  function enqueue(id, fn) {
+    var p = (queues.get(id) || Promise.resolve()).then(fn).catch(onWriteError);
+    queues.set(id, p);
+    return p;
+  }
+
+  function addTask(t) {
+    if (mode === 'cloud') { enqueue(t.id, function () { return col.doc(t.id).set(body(t)); }); }
+    else { tasks.push(t); saveLocal(); render(); }
+  }
+  function patchTask(id, fields) {
+    if (mode === 'cloud') { enqueue(id, function () { return col.doc(id).update(fields); }); }
+    else {
+      var t = tasks.find(function (x) { return x.id === id; });
+      if (t) Object.assign(t, fields);
+      saveLocal(); render();
+    }
+  }
+  function removeTasks(list) {
+    if (mode === 'cloud') {
+      list.forEach(function (t) { enqueue(t.id, function () { return col.doc(t.id).delete(); }); });
+    } else {
+      var ids = list.map(function (t) { return t.id; });
+      tasks = tasks.filter(function (x) { return ids.indexOf(x.id) === -1; });
+      saveLocal(); render();
+    }
+  }
+  function restoreTasks(list) {
+    list.forEach(function (t) { addTask(t); });
+  }
+
+  /* ---------- tampilan ---------- */
+  function setStatus() {
+    var s = $('#status');
+    s.classList.remove('ok');
+    if (!ready && slow) { s.textContent = 'Penyimpanan belum bisa dijangkau.'; return; }
+    if (!ready) { s.textContent = 'Memuat…'; return; }
+    if (mode === 'cloud') { s.textContent = 'Tersimpan otomatis di akunmu dan tampil di semua perangkat.'; s.classList.add('ok'); }
+    else { s.textContent = 'Tersimpan otomatis di browser ini.'; }
+  }
+
+  function renderHead() {
+    var total = tasks.length;
+    var done = tasks.filter(function (t) { return t.done; }).length;
+    var open = total - done;
+    var pct = total ? Math.round(done / total * 100) : 0;
+    $('#bar-fill').style.width = pct + '%';
+    $('.bar').setAttribute('aria-valuenow', String(pct));
+    var s = $('#summary');
+    s.textContent = '';
+    if (!ready) { s.textContent = 'Memuat tugasmu…'; }
+    else if (!total) { s.textContent = 'Belum ada tugas.'; }
+    else if (!open) { s.textContent = 'Semua ' + total + ' tugas sudah selesai.'; }
+    else {
+      var a = el('strong', null, String(open));
+      s.appendChild(a);
+      s.appendChild(document.createTextNode(' tugas tersisa, ' + done + ' dari ' + total + ' selesai'));
+    }
+    $('#n-all').textContent = total;
+    $('#n-open').textContent = open;
+    $('#n-done').textContent = done;
+    $('#clear-done').hidden = !done;
+    document.querySelectorAll('.tabs button').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.filter === filter ? 'true' : 'false');
+    });
+  }
+
+  function emptyEl(title, text, withSample) {
+    var li = el('li', 'empty');
+    li.appendChild(el('h2', null, title));
+    if (text) li.appendChild(el('p', null, text));
+    if (withSample) {
+      var b = el('button', 'btn', 'Isi dengan contoh tugas');
+      b.type = 'button';
+      b.dataset.act = 'sample';
+      li.appendChild(b);
+    }
+    return li;
+  }
+
+  function itemEl(t) {
+    var li = el('li', 'task' + (t.done ? ' is-done' : ''));
+    li.dataset.id = t.id;
+
+    if (editingId === t.id) {
+      li.className = 'task editing';
+      var f = el('form', 'edit');
+      f.dataset.id = t.id;
+      f.noValidate = true;
+      var tx = el('input', 'input');
+      tx.type = 'text'; tx.id = 'edit-text'; tx.maxLength = 200; tx.value = editDraft.text;
+      tx.setAttribute('aria-label', 'Nama tugas');
+      tx.addEventListener('input', function () { editDraft.text = tx.value; });
+      var row = el('div', 'edit-row');
+      var pr = el('select', 'input');
+      pr.id = 'edit-prio';
+      pr.setAttribute('aria-label', 'Prioritas');
+      [1, 2, 3].forEach(function (v) {
+        var o = el('option', null, PRIO[v]); o.value = String(v);
+        if (v === editDraft.prio) o.selected = true;
+        pr.appendChild(o);
+      });
+      pr.addEventListener('change', function () { editDraft.prio = Number(pr.value); });
+      var du = el('input', 'input');
+      du.type = 'date'; du.id = 'edit-due'; du.value = editDraft.due;
+      du.setAttribute('aria-label', 'Tenggat');
+      du.addEventListener('input', function () { editDraft.due = du.value; });
+      var ok = el('button', 'btn btn-primary', 'Simpan'); ok.type = 'submit';
+      var no = el('button', 'btn', 'Batal'); no.type = 'button'; no.dataset.act = 'cancel';
+      row.appendChild(pr); row.appendChild(du); row.appendChild(ok); row.appendChild(no);
+      f.appendChild(tx); f.appendChild(row);
+      li.appendChild(f);
+      return li;
+    }
+
+    var lab = el('label', 'check');
+    var cb = el('input');
+    cb.type = 'checkbox'; cb.id = 'c-' + t.id; cb.checked = !!t.done;
+    cb.setAttribute('aria-label', 'Selesai: ' + t.text);
+    var box = el('span', 'box');
+    box.setAttribute('aria-hidden', 'true');
+    box.innerHTML = ICON_CHECK;
+    lab.appendChild(cb); lab.appendChild(box);
+
+    var main = el('div', 'task-body');
+    main.appendChild(el('p', 'task-text', t.text));
+    var meta = el('div', 'meta');
+    meta.appendChild(el('span', 'chip p' + t.prio, PRIO[t.prio] || PRIO[2]));
+    var di = dueInfo(t);
+    if (di) meta.appendChild(el('span', 'due ' + di.cls, di.text));
+    main.appendChild(meta);
+
+    var act = el('div', 'actions');
+    var be = el('button', 'icon-btn'); be.type = 'button'; be.dataset.act = 'edit';
+    be.setAttribute('aria-label', 'Ubah: ' + t.text); be.title = 'Ubah'; be.innerHTML = ICON_EDIT;
+    var bd = el('button', 'icon-btn danger'); bd.type = 'button'; bd.dataset.act = 'delete';
+    bd.setAttribute('aria-label', 'Hapus: ' + t.text); bd.title = 'Hapus'; bd.innerHTML = ICON_TRASH;
+    act.appendChild(be); act.appendChild(bd);
+
+    li.appendChild(lab); li.appendChild(main); li.appendChild(act);
+    return li;
+  }
+
+  function renderList() {
+    var ul = $('#list');
+    ul.textContent = '';
+    if (!ready) {
+      ul.appendChild(emptyEl(slow ? 'Penyimpanan belum bisa dijangkau' : 'Memuat tugasmu…',
+        slow ? 'Tugasmu akan muncul begitu koneksi tersambung. Tugas baru yang kamu tambah sekarang mungkin tertunda.' : ''));
+      return;
+    }
+    if (!tasks.length) {
+      ul.appendChild(emptyEl('Belum ada tugas', 'Tulis tugas pertamamu di kolom atas, lengkap dengan prioritas dan tenggat. Contoh tugas bisa kamu hapus kapan saja.', true));
+      return;
+    }
+    var shown = sorted(tasks).filter(function (t) {
+      return filter === 'all' || (filter === 'done' ? t.done : !t.done);
+    });
+    if (!shown.length) {
+      ul.appendChild(emptyEl(filter === 'done' ? 'Belum ada tugas yang selesai' : 'Tidak ada tugas yang tersisa',
+        filter === 'done' ? 'Centang sebuah tugas untuk memindahkannya ke sini.' : 'Semua tugas sudah selesai. Tambahkan yang baru kalau perlu.'));
+      return;
+    }
+    shown.forEach(function (t) { ul.appendChild(itemEl(t)); });
+    if (focusEdit) {
+      var x = $('#edit-text');
+      if (x) { x.focus(); x.setSelectionRange(x.value.length, x.value.length); }
+      focusEdit = false;
+    }
+    if (refocusId) {
+      var c = document.getElementById('c-' + refocusId);
+      if (c) c.focus();
+      refocusId = null;
+    }
+  }
+
+  function render() {
+    renderHead();
+    renderList();
+    setStatus();
+  }
+
+  /* ---------- aksi ---------- */
+  function findTask(id) { return tasks.find(function (x) { return x.id === id; }); }
+
+  function addSamples() {
+    var now = Date.now();
+    var items = [
+      ['Kirim laporan mingguan ke atasan', 3, 0],
+      ['Bayar tagihan internet', 3, -1],
+      ['Beli bahan untuk makan malam', 2, 1],
+      ['Balas undangan rapat bulanan', 1, 3],
+      ['Rapikan folder Unduhan', 1, null]
+    ];
+    items.forEach(function (it, i) {
+      var due = '';
+      if (it[2] !== null) { var d = new Date(); d.setDate(d.getDate() + it[2]); due = ymd(d); }
+      addTask({ id: newId(), text: it[0], done: false, prio: it[1], due: due, created: now + i, doneAt: 0 });
+    });
+  }
+
+  $('#add-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var tx = $('#new-text');
+    var text = tx.value.trim();
+    var hint = $('#add-hint');
+    if (!text) { hint.hidden = false; tx.focus(); return; }
+    hint.hidden = true;
+    addTask({
+      id: newId(), text: text, done: false,
+      prio: Number($('#new-prio').value) || 2,
+      due: $('#new-due').value || '',
+      created: Date.now(), doneAt: 0
+    });
+    tx.value = '';
+    $('#new-due').value = '';
+    $('#new-prio').value = '2';
+    tx.focus();
+  });
+  $('#new-text').addEventListener('input', function () { $('#add-hint').hidden = true; });
+
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () { filter = b.dataset.filter; render(); });
+  });
+
+  $('#clear-done').addEventListener('click', function () {
+    var done = tasks.filter(function (t) { return t.done; });
+    if (!done.length) return;
+    var copy = done.map(function (t) { return Object.assign({}, t); });
+    removeTasks(done);
+    lastRemoved = copy;
+    toast(copy.length + ' tugas selesai dihapus', function () { restoreTasks(copy); });
+  });
+
+  var list = $('#list');
+  list.addEventListener('change', function (e) {
+    var cb = e.target;
+    if (!cb || cb.type !== 'checkbox') return;
+    var li = cb.closest('.task');
+    if (!li) return;
+    refocusId = li.dataset.id;
+    patchTask(li.dataset.id, { done: cb.checked, doneAt: cb.checked ? Date.now() : 0 });
+  });
+  list.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b) return;
+    var li = b.closest('.task');
+    var act = b.dataset.act;
+    if (act === 'sample') { addSamples(); return; }
+    if (act === 'cancel') { editingId = null; editDraft = null; render(); return; }
+    if (!li) return;
+    var t = findTask(li.dataset.id);
+    if (!t) return;
+    if (act === 'edit') {
+      editingId = t.id;
+      editDraft = { text: t.text, prio: t.prio, due: t.due || '' };
+      focusEdit = true;
+      render();
+    } else if (act === 'delete') {
+      var copy = Object.assign({}, t);
+      removeTasks([t]);
+      lastRemoved = [copy];
+      toast('Tugas dihapus', function () { restoreTasks([copy]); });
+    }
+  });
+  list.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target;
+    var id = f.dataset.id;
+    var text = (editDraft && editDraft.text || '').trim();
+    if (!text) { $('#edit-text').focus(); return; }
+    var fields = { text: text, prio: editDraft.prio, due: editDraft.due || '' };
+    editingId = null; editDraft = null;
+    patchTask(id, fields);
+    if (mode === 'cloud') render();
+  });
+  list.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && editingId) { editingId = null; editDraft = null; render(); }
+  });
+
+  /* ---------- mulai ---------- */
+  function startLocal() {
+    mode = 'local';
+    tasks = loadLocal();
+    ready = true;
+    render();
+  }
+
+  function start() {
+    try { $('#today').textContent = fmtLong.format(new Date()); } catch (e) { /* diabaikan */ }
+    startLocal();
+  }
+
+  start();
+})();
+</script>
+
+</body>
+</html>
