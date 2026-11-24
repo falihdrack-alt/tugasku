@@ -4,57 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskKu Kuliah</title>
+    <!-- Tailwind CSS untuk styling modern -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-6">
-    <div class="max-w-md mx-auto bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-700">
-        <h1 class="text-2xl font-bold mb-4 text-emerald-400">📝 Tugas Kuliah-ku</h1>
-        
-        <!-- Form Tambah Tugas -->
-        <div class="flex gap-2 mb-6">
-            <input type="text" id="taskInput" placeholder="Tulis nama tugas baru..." 
-                class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500">
-            <button onclick="addTask()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-semibold transition">Tambah</button>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 sm:p-8">
+    <div class="max-w-xl mx-auto bg-slate-800 rounded-2xl shadow-2xl p-6 border border-slate-700">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-indigo-400">🎓 TaskKu Kuliah</h1>
+                <p class="text-sm text-slate-400">Manajemen tugas & deadline kuliah</p>
+            </div>
+            <div id="task-stats" class="text-xs bg-slate-700 px-3 py-1.5 rounded-full text-slate-300 font-medium">
+                0 Selesai dari 0
+            </div>
         </div>
 
-        <!-- List Tugas -->
-        <ul id="taskList" class="space-y-3">
-            <!-- Data tugas muncul di sini -->
+        <!-- Form Input Tugas & Deadline -->
+        <form id="task-form" class="space-y-3 mb-6">
+            <div>
+                <input type="text" id="task-input" placeholder="Tulis nama tugas kuliah..." required
+                    class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 text-sm text-slate-100 placeholder-slate-500">
+            </div>
+            <div class="flex gap-2">
+                <input type="date" id="date-input" required
+                    class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 text-sm text-slate-300">
+                <button type="submit" 
+                    class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-indigo-600/30 whitespace-nowrap">
+                    Tambah
+                </button>
+            </div>
+        </form>
+
+        <!-- Daftar Tugas -->
+        <ul id="task-list" class="space-y-3">
+            <!-- List tugas akan masuk otomatis di sini -->
         </ul>
+        
+        <p id="empty-state" class="text-center text-slate-500 text-sm py-8">Belum ada tugas kuliah. Yuk tambah dulu!</p>
     </div>
 
     <script>
-        let tasks = JSON.parse(localStorage.getItem('my_tasks')) || [
-            { text: "Makalah PTI: AI untuk Kemajuan Peradaban (Min 10 Halaman)", completed: false }
-        ];
+        const taskForm = document.getElementById('task-form');
+        const taskInput = document.getElementById('task-input');
+        const dateInput = document.getElementById('date-input');
+        const taskList = document.getElementById('task-list');
+        const taskStats = document.getElementById('task-stats');
+        const emptyState = document.getElementById('empty-state');
+
+        let tasks = JSON.parse(localStorage.getItem('tasks_kuliah')) || [];
+
+        function saveAndRender() {
+            localStorage.setItem('tasks_kuliah', JSON.stringify(tasks));
+            renderTasks();
+        }
 
         function renderTasks() {
-            const listEl = document.getElementById('taskList');
-            listEl.innerHTML = '';
+            taskList.innerHTML = '';
+            if (tasks.length === 0) {
+                emptyState.classList.remove('hidden');
+                taskStats.innerText = `0 Selesai dari 0`;
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            let completedCount = 0;
+            const today = new Date().toISOString().split('T')[0];
+
             tasks.forEach((task, index) => {
-                listEl.innerHTML += `
-                    <li class="flex items-center justify-between bg-slate-700/50 p-3 rounded-lg border border-slate-600/50">
-                        <span class="${task.completed ? 'line-through text-slate-400' : 'text-slate-200'} flex-1 mr-2">${task.text}</span>
-                        <button onclick="toggleTask(${index})" class="w-8 h-8 rounded-full border-2 ${task.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-400 hover:border-emerald-400'} flex items-center justify-center transition">
-                            ${task.completed ? '✓' : ''}
-                        </button>
-                    </li>
+                if (task.completed) completedCount++;
+
+                // Hitung status deadline
+                let isUrgent = task.date <= today && !task.completed;
+                let dateBadgeClass = isUrgent 
+                    ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' 
+                    : 'bg-slate-700 text-slate-300 border-slate-600';
+
+                const li = document.createElement('li');
+                li.className = `flex items-center justify-between p-3.5 rounded-xl border transition-all ${task.completed ? 'bg-slate-900/50 border-slate-800 opacity-60' : 'bg-slate-900 border-slate-700/60 shadow-md'}`;
+                
+                li.innerHTML = `
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask(${index})"
+                            class="w-5 h-5 rounded accent-indigo-500 cursor-pointer">
+                        <div class="truncate">
+                            <p class="text-sm font-medium ${task.completed ? 'line-through text-slate-500' : 'text-slate-200'}">${task.text}</p>
+                            <span class="text-[11px] px-2 py-0.5 rounded-md border mt-1 inline-block ${dateBadgeClass}">
+                                📅 Deadline: ${task.date} ${isUrgent ? '⚠️ Mepet!' : ''}
+                            </span>
+                        </div>
+                    </div>
+                    <button onclick="deleteTask(${index})" class="text-slate-500 hover:text-rose-400 p-1 text-sm transition-colors">
+                        ✕
+                    </button>
                 `;
+                taskList.appendChild(li);
             });
-            localStorage.setItem('my_tasks', JSON.stringify(tasks));
+
+            taskStats.innerText = `${completedCount} Selesai dari ${tasks.length}`;
         }
 
-        function addTask() {
-            const input = document.getElementById('taskInput');
-            if (input.value.trim() === '') return;
-            tasks.push({ text: input.value, completed: false });
-            input.value = '';
-            renderTasks();
-        }
+        taskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(!taskInput.value.trim() || !dateInput.value) return;
 
-        function toggleTask(index) {
+            tasks.push({
+                text: taskInput.value.trim(),
+                date: dateInput.value,
+                completed: false
+            });
+
+            taskInput.value = '';
+            dateInput.value = '';
+            saveAndRender();
+        });
+
+        window.toggleTask = function(index) {
             tasks[index].completed = !tasks[index].completed;
-            renderTasks();
+            saveAndRender();
+        }
+
+        window.deleteTask = function(index) {
+            tasks.splice(index, 1);
+            saveAndRender();
         }
 
         renderTasks();
